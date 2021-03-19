@@ -108,6 +108,11 @@ The contents of the "aural" folder should look like this:
 
 NOTE - Please ***don't*** run the app directly from within the image. It is a compressed image, and may result in the app behaving slowly and/or unpredictably. So, copy it outside and run the copy.
 
+If you have [Homebrew](https://brew.sh/) installed, try run the following in your terminal:
+```shell
+brew install --cask aural
+```
+
 ### Enabling media keys support (optional)
 
 Follow the steps listed [here](https://github.com/maculateConception/aural-player/wiki/Enabling-media-keys-support)
