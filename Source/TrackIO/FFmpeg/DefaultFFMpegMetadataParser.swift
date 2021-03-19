@@ -16,7 +16,7 @@ class DefaultFFmpegMetadataParser: FFmpegMetadataParser {
             for iKey in ignoredKeys {
                 
                 if !key.lowercased().contains(iKey) {
-                    metadata.genericFields[formatKey(key)] = value
+                    metadata.auxiliaryFields[formatKey(key)] = value
                 }
             }
             
@@ -28,8 +28,8 @@ class DefaultFFmpegMetadataParser: FFmpegMetadataParser {
         !metadataMap.otherMetadata.essentialFields.isEmpty
     }
     
-    func hasGenericMetadataForTrack(_ metadataMap: FFmpegMappedMetadata) -> Bool {
-        !metadataMap.otherMetadata.genericFields.isEmpty
+    func hasAuxiliaryMetadataForTrack(_ metadataMap: FFmpegMappedMetadata) -> Bool {
+        !metadataMap.otherMetadata.auxiliaryFields.isEmpty
     }
 
     private func formatKey(_ key: String) -> String {
@@ -46,7 +46,7 @@ class DefaultFFmpegMetadataParser: FFmpegMetadataParser {
         
         var metadata: [String: MetadataEntry] = [:]
         
-        for (key, value) in metadataMap.otherMetadata.genericFields {
+        for (key, value) in metadataMap.otherMetadata.auxiliaryFields {
             metadata[key] = MetadataEntry(.other, key, StringUtils.cleanUpString(value.trim()))
         }
         

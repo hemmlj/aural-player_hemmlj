@@ -38,8 +38,15 @@ class FFmpegDecoder {
     ///
     var eof: Bool = false
 
-    // Indicates whether or not we have reached the end of the loop when scheduling buffers for the current loop (analogous to EOF for file scheduling).
+    ///
+    /// Indicates whether or not we have reached the end of the loop when scheduling buffers for the current loop (analogous to EOF for file scheduling).
+    ///
     var endOfLoop: AtomicBool = AtomicBool()
+    
+    ///
+    /// Indicates whether or not the frames that are decoded need to have timestamps on them (this is true when a segment loop is active, false when not).
+    ///
+    var framesNeedTimestamps: AtomicBool = AtomicBool()
     
     ///
     /// A queue data structure used to temporarily hold buffered frames as they are decoded by the codec and before passing them off to a FrameBuffer.
@@ -77,6 +84,8 @@ class FFmpegDecoder {
     ///
     /// Decodes the currently playing file's audio stream to produce a given (maximum) number of samples, in a loop, and returns a frame buffer
     /// containing all the samples produced during the loop.
+    ///
+    /// - Parameter maxSampleCount: Maximum number of samples to be decoded
     ///
     /// # Notes #
     ///
@@ -121,12 +130,12 @@ class FFmpegDecoder {
                 self.eof = packetReadError.isEOF
                 
                 // If the error is something other than EOF, it either indicates a real problem or simply that there was one bad packet. Log the error.
-                if !eof {print("\nPacket read error:", packetReadError)}
+                if !eof {NSLog("Packet read error while reading track \(fileCtx.filePath) : \(packetReadError)")}
                 
             } catch {
                 
                 // This either indicates a real problem or simply that there was one bad packet. Log the error.
-                print("\nDecoder error:", error)
+                NSLog("Decoder error while reading track \(fileCtx.filePath) : \(error)")
             }
         }
         
@@ -147,7 +156,7 @@ class FFmpegDecoder {
                 terminalFrames.append(contentsOf: drainFrames.frames)
                 
             } catch {
-                print("\nDecoder drain error:", error)
+                NSLog("Decoder drain error while reading track \(fileCtx.filePath): \(error)")
             }
             
             // Append these terminal frames to the frame buffer (the frame buffer cannot reject terminal frames).
@@ -182,14 +191,6 @@ class FFmpegDecoder {
             
             try fileCtx.seek(within: stream, to: time)
             
-            if fileCtx.isRawAudioFile {
-
-                // TODO: Need to truncate / discard frames before returning, if error exceeds tolerance ???
-
-                self.eof = false
-                return
-            }
-
             // Because ffmpeg's seeking is not always accurate, we need to check where the seek took us to, within the stream, and
             // we may need to skip some packets / samples.
             do {
@@ -228,7 +229,11 @@ class FFmpegDecoder {
                     for packet in (firstUsablePacketIndex..<packetsRead.count).map({packetsRead[$0].packet}) {
                         
                         let packetFrames = try codec.decode(packet: packet)
-                        setTimestampsInFrames(packetFrames.frames)
+                        
+                        if framesNeedTimestamps.value {
+                            setTimestampsInFrames(packetFrames.frames)
+                        }
+                        
                         framesFromUsablePackets.append(packetFrames)
                     }
                     
@@ -250,7 +255,7 @@ class FFmpegDecoder {
                 }
                 
             } catch {
-                print("\nError while skipping packets after seeking to time: \(time) seconds.")
+                NSLog("Error while skipping packets after seeking within track \(fileCtx.filePath) to time: \(time) seconds: \(error)")
             }
             
             // If the seek succeeds, we have not reached EOF.
@@ -260,7 +265,12 @@ class FFmpegDecoder {
             
             // EOF is considered harmless, only throw if another type of error occurred.
             self.eof = seekError.isEOF
-            if !eof {throw DecoderError(seekError.code)}
+            
+            if !eof {
+                
+                NSLog("Error while skipping packets after seeking within track \(fileCtx.filePath) to time: \(time) seconds: \(seekError.code.errorDescription)")
+                throw DecoderError(seekError.code)
+            }
         }
     }
     
@@ -325,7 +335,11 @@ class FFmpegDecoder {
             if let packet = try fileCtx.readPacket(from: stream) {
                 
                 let frames = try codec.decode(packet: packet).frames
-                setTimestampsInFrames(frames)
+                
+                if framesNeedTimestamps.value {
+                    setTimestampsInFrames(frames)
+                }
+                
                 frames.forEach {frameQueue.enqueue($0)}
             }
         }

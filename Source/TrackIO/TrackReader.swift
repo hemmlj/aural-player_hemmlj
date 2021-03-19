@@ -18,10 +18,14 @@ class TrackReader {
     func loadPlaylistMetadata(for track: Track) {
         
         let fileMetadata = FileMetadata()
+        var durationIsAccurate: Bool = true
         
         do {
             
-            fileMetadata.playlist = try fileReader.getPlaylistMetadata(for: track.file)
+            let playlistMetadata = try fileReader.getPlaylistMetadata(for: track.file)
+            fileMetadata.playlist = playlistMetadata
+            
+            durationIsAccurate = playlistMetadata.durationIsAccurate
             
         } catch {
             
@@ -29,6 +33,22 @@ class TrackReader {
         }
         
         track.setPlaylistMetadata(from: fileMetadata)
+        
+        // For non-native tracks that don't have accurate duration, compute duration async.
+        
+        if !track.isNativelySupported, track.isPlayable, track.duration <= 0 || !durationIsAccurate {
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                if let duration = self.fileReader.computeAccurationDuration(for: track.file), duration > 0 {
+                    
+                    track.duration = duration
+                    track.durationIsAccurate = true
+                    
+                    Messenger.publish(TrackInfoUpdatedNotification(updatedTrack: track, updatedFields: .duration))
+                }
+            }
+        }
     }
     
     private func computePlaybackContext(for track: Track) throws {
@@ -36,7 +56,7 @@ class TrackReader {
         track.playbackContext = try fileReader.getPlaybackMetadata(for: track.file)
         
         // If duration has changed as a result of precise computation, set it in the track and send out an update notification
-        if let playbackContext = track.playbackContext, track.duration != playbackContext.duration {
+        if !track.durationIsAccurate, let playbackContext = track.playbackContext, track.duration != playbackContext.duration {
             
             track.duration = playbackContext.duration
             Messenger.publish(TrackInfoUpdatedNotification(updatedTrack: track, updatedFields: .duration))

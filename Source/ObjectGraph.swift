@@ -155,6 +155,24 @@ class ObjectGraph {
         VisualizerViewState.initialize(appState.ui.visualizer)
         
         fft = FFT()
+        
+        DispatchQueue.global(qos: .background).async {
+            cleanUpTranscoderFolders()
+        }
+    }
+    
+    ///
+    /// Clean up (delete) file system folders that were used by previous app versions that had the transcoder.
+    ///
+    private static func cleanUpTranscoderFolders() {
+        
+        let transcoderDir: URL = URL(fileURLWithPath: AppConstants.FilesAndPaths.baseDir.path).appendingPathComponent("transcoderStore", isDirectory: true)
+        
+        let artDir: URL = URL(fileURLWithPath: AppConstants.FilesAndPaths.baseDir.path).appendingPathComponent("albumArt", isDirectory: true)
+        
+        for folder in [transcoderDir, artDir].filter({FileSystemUtils.fileExists($0)}) {
+            FileSystemUtils.deleteDir(folder)
+        }
     }
     
     private static let tearDownOpQueue: OperationQueue = {
@@ -170,6 +188,8 @@ class ObjectGraph {
     static func tearDown() {
         
         // Gather all pieces of app state into the appState object
+        
+        appState.appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         
         appState.audioGraph = (audioGraph as! PersistentModelObject).persistentState as! AudioGraphState
         appState.playlist = (playlist as! Playlist).persistentState as! PlaylistState

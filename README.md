@@ -108,6 +108,11 @@ The contents of the "aural" folder should look like this:
 
 NOTE - Please ***don't*** run the app directly from within the image. It is a compressed image, and may result in the app behaving slowly and/or unpredictably. So, copy it outside and run the copy.
 
+If you have [Homebrew](https://brew.sh/) installed, try run the following in your terminal:
+```shell
+brew install --cask aural
+```
+
 ### Enabling media keys support (optional)
 
 Follow the steps listed [here](https://github.com/maculateConception/aural-player/wiki/Enabling-media-keys-support)
@@ -299,7 +304,7 @@ Of course, you may also file issues right here on GitHub as needed. I'm usually 
 
 ## Third party code attributions
 
-* [FFmpeg](https://www.ffmpeg.org/) (used to transcode from unsupported to supported audio formats)
+* [FFmpeg](https://www.ffmpeg.org/) (used to decode audio formats not natively supported on macOS)
 * [MediaKeyTap](https://github.com/nhurden/MediaKeyTap) (used to respond to media keys)
 * [RangeSlider](https://github.com/matthewreagan/RangeSlider) (used in the Filter effects unit to specify frequency ranges)
 

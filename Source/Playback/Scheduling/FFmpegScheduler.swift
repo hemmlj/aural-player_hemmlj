@@ -30,6 +30,10 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
     /// A helper object that does the actual decoding.
     var decoder: FFmpegDecoder! {playbackCtx?.decoder}
     
+    // Indicates whether or not a track completed while the player was paused.
+    // This is required because, in rare cases, some file segments may complete when they've reached close to the end, even if the last frame has not played yet.
+    var trackCompletedWhilePaused: Bool = false
+    
     let sampleConverter: SampleConverterProtocol
     
     ///
@@ -70,11 +74,13 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
         
         guard let thePlaybackCtx = session.track.playbackContext as? FFmpegPlaybackContext else {
 
-            NSLog("FFmpegScheduler.playTrack() - Unable to play track \(session.track.displayName) because it has no playback context.")
+            // This should NEVER happen. If it does, it indicates a bug (track was not prepared for playback).
+            NSLog("Unable to play track \(session.track.displayName) because it has no playback context.")
             return
         }
         
         self.playbackCtx = thePlaybackCtx
+        decoder.framesNeedTimestamps.setValue(false)
         
         initiateDecodingAndScheduling(for: session, from: startPosition == 0 ? nil : startPosition)
         
@@ -83,7 +89,10 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
             playerNode.play()
             
         } else {
-            NSLog("FFmpegScheduler.playTrack() - scheduledBufferCount = \(scheduledBufferCounts[session]?.value), WARNING: No buffers scheduled for track \(session.track.displayName) ... cannot begin playback.")
+            
+            // This should NEVER happen. If it does, it indicates a bug (some kind of race condition)
+            // or that something's wrong with the file.
+            NSLog("WARNING: No buffers scheduled for track \(session.track.displayName) ... cannot begin playback.")
         }
     }
     
@@ -119,7 +128,15 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
                 // and don't do any scheduling.
                 if eof {
                     
-                    trackCompleted(session)
+                    if playerNode.isPlaying {
+                        trackCompleted(session)
+                        
+                    } else {
+                        
+                        playerNode.seekToEndOfTrack(session)
+                        trackCompletedWhilePaused = true
+                    }
+                    
                     return
                 }
             }
@@ -132,7 +149,7 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
             
         } catch {
             
-            NSLog("FFmpegScheduler.initiateDecodingAndScheduling() - Decoder threw error: \(error) while seeking to position \(seekPosition ?? 0) for track \(session.track.displayName) ... cannot initiate scheduling.")
+            NSLog("Decoder threw error: \(error) while seeking to position \(seekPosition ?? 0) for track \(session.track.displayName) ... cannot initiate scheduling.")
         }
     }
     
@@ -151,11 +168,7 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
     ///
     func decodeAndScheduleOneBufferAsync(for session: PlaybackSession, maxSampleCount: Int32) {
         
-        if eof {
-            
-            NSLog("FFmpegScheduler.decodeAndScheduleOneBufferAsync() - Reached EOF while scheduling for track \(session.track.displayName) ... cannot continue scheduling.")
-            return
-        }
+        if eof {return}
         
         self.schedulingOpQueue.addOperation {
             self.decodeAndScheduleOneBuffer(for: session, immediatePlayback: false, maxSampleCount: maxSampleCount)
@@ -185,11 +198,7 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
     ///
     func decodeAndScheduleOneBuffer(for session: PlaybackSession, from seekPosition: Double? = nil, immediatePlayback: Bool, maxSampleCount: Int32) {
         
-        if eof {
-            
-            NSLog("FFmpegScheduler.decodeAndScheduleOneBuffer() - Reached EOF while scheduling for track \(session.track.displayName) ... cannot continue scheduling.")
-            return
-        }
+        if eof {return}
         
         // Ask the decoder to decode up to the given number of samples.
         let frameBuffer: FFmpegFrameBuffer = decoder.decode(maxSampleCount: maxSampleCount)
@@ -219,14 +228,10 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
 
             // Upon scheduling the buffer, increment the counter.
             scheduledBufferCounts[session]?.increment()
-            
-            NSLog("FFmpegScheduler.decodeAndScheduleOneBuffer() - scheduledBufferCount = \(scheduledBufferCounts[session]?.value) for track \(session.track.displayName) ")
         }
     }
     
     func bufferCompleted(_ session: PlaybackSession) {
-        
-        NSLog("FFmpegScheduler.bufferCompleted() - scheduledBufferCount = \(scheduledBufferCounts[session]?.value) for track \(session.track.displayName) ")
         
         // If the buffer-associated session is not the same as the current session
         // (possible if stop() was called, eg. old buffers that complete when seeking), don't do anything.
@@ -261,7 +266,17 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
     }
     
     func resume() {
-        playerNode.play()
+        
+        // Check if track completion occurred while paused.
+        if trackCompletedWhilePaused, let curSession = PlaybackSession.currentSession {
+            
+            // Reset the flag and signal completion.
+            trackCompletedWhilePaused = false
+            trackCompleted(curSession)
+            
+        } else {
+            playerNode.play()
+        }
     }
     
     func stop() {
@@ -271,6 +286,7 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
         decoder?.stop()
         
         scheduledBufferCounts.removeAll()
+        trackCompletedWhilePaused = false
     }
     
     func seekToTime(_ session: PlaybackSession, _ seconds: Double, _ beginPlayback: Bool) {
@@ -284,6 +300,7 @@ class FFmpegScheduler: PlaybackSchedulerProtocol {
         
         stop()
         scheduledBufferCounts[session] = AtomicCounter<Int>()
+        decoder.framesNeedTimestamps.setValue(false)
         
         initiateDecodingAndScheduling(for: session, from: seconds)
         
