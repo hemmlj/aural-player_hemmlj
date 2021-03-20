@@ -479,7 +479,6 @@
 		3ECB54F025E559E7002259C4 /* roundornoncommercial.regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3ECB54ED25E559DE002259C4 /* roundornoncommercial.regular.otf */; };
 		3ECD7DEE25DFE23500A61753 /* AlmendraSC-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3ECD7DEB25DFE1E900A61753 /* AlmendraSC-Regular.ttf */; };
 		3ECD7DF025DFE23700A61753 /* WalterTurncoat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3ECD7DEC25DFE1E900A61753 /* WalterTurncoat.ttf */; };
-		3EDB335425E8ADBA004DF7DE /* ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 3EDB335325E8ADBA004DF7DE /* ffmpeg.c */; };
 		3EDB33E825E8AE09004DF7DE /* FFmpegAudioStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDB335825E8AE08004DF7DE /* FFmpegAudioStream.swift */; };
 		3EDB33E925E8AE09004DF7DE /* FFmpegFileContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDB335925E8AE08004DF7DE /* FFmpegFileContext.swift */; };
 		3EDB33EA25E8AE09004DF7DE /* FFmpegAudioFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDB335A25E8AE08004DF7DE /* FFmpegAudioFormat.swift */; };
@@ -1055,8 +1054,6 @@
 		3EDB334B25E8AD89004DF7DE /* libavutil.56.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libavutil.56.dylib; sourceTree = "<group>"; };
 		3EDB334F25E8AD89004DF7DE /* libavcodec.58.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libavcodec.58.dylib; sourceTree = "<group>"; };
 		3EDB335125E8ADBA004DF7DE /* Aural-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Aural-Bridging-Header.h"; sourceTree = "<group>"; };
-		3EDB335225E8ADBA004DF7DE /* ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ffmpeg.h; path = "../../Aural-richUI/Source/ffmpeg.h"; sourceTree = "<group>"; };
-		3EDB335325E8ADBA004DF7DE /* ffmpeg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ffmpeg.c; path = "../../Aural-richUI/Source/ffmpeg.c"; sourceTree = "<group>"; };
 		3EDB335825E8AE08004DF7DE /* FFmpegAudioStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FFmpegAudioStream.swift; sourceTree = "<group>"; };
 		3EDB335925E8AE08004DF7DE /* FFmpegFileContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FFmpegFileContext.swift; sourceTree = "<group>"; };
 		3EDB335A25E8AE08004DF7DE /* FFmpegAudioFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FFmpegAudioFormat.swift; sourceTree = "<group>"; };
@@ -1368,8 +1365,6 @@
 				3EDB342625E8B75D004DF7DE /* TrackIO */,
 				3E6C10B725CEB98700BF0D07 /* Utils */,
 				3EDB335625E8AE08004DF7DE /* ffmpeg */,
-				3EDB335325E8ADBA004DF7DE /* ffmpeg.c */,
-				3EDB335225E8ADBA004DF7DE /* ffmpeg.h */,
 				3EDB335125E8ADBA004DF7DE /* Aural-Bridging-Header.h */,
 			);
 			path = Source;
@@ -3094,7 +3089,6 @@
 				3E6C11CA25CEBDBE00BF0D07 /* PlaybackInfoDelegateProtocol.swift in Sources */,
 				3EDB33F625E8AE09004DF7DE /* FFmpegStreamProtocol.swift in Sources */,
 				3E6C122125CEBDE600BF0D07 /* ColorSchemePopupMenuController.swift in Sources */,
-				3EDB335425E8ADBA004DF7DE /* ffmpeg.c in Sources */,
 				3E6C12C925CEBE6700BF0D07 /* Colors.swift in Sources */,
 				3EDB346025E8B75D004DF7DE /* CommonAVAssetParser.swift in Sources */,
 				3EDB33EA25E8AE09004DF7DE /* FFmpegAudioFormat.swift in Sources */,
