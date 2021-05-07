@@ -27,6 +27,8 @@ struct ViewFactory {
         
         fileprivate static let filterViewController: FilterViewController = FilterViewController()
         
+        fileprivate static let auViewController: AudioUnitsViewController = AudioUnitsViewController()
+        
         fileprivate static let recorderViewController: RecorderViewController = RecorderViewController()
     }
     
@@ -58,6 +60,8 @@ struct ViewFactory {
         fileprivate static let historyPreferencesViewController: HistoryPreferencesViewController = HistoryPreferencesViewController()
         
         fileprivate static let controlsPreferencesViewController: ControlsPreferencesViewController = ControlsPreferencesViewController()
+        
+        fileprivate static let metadataPreferencesViewController: MetadataPreferencesViewController = MetadataPreferencesViewController()
     }
     
     fileprivate struct PopoverViews {
@@ -155,6 +159,10 @@ struct ViewFactory {
         return EffectsViews.filterViewController.view
     }
     
+    static var auView: NSView {
+        return EffectsViews.auViewController.view
+    }
+    
     // Returns the view that displays the Recorder unit
     static var recorderView: NSView {
         return EffectsViews.recorderViewController.view
@@ -214,6 +222,10 @@ struct ViewFactory {
     
     static var controlsPreferencesView: PreferencesViewProtocol {
         return PreferencesViews.controlsPreferencesViewController
+    }
+    
+    static var metadataPreferencesView: PreferencesViewProtocol {
+        return PreferencesViews.metadataPreferencesViewController
     }
     
     static var generalColorSchemeView: ColorSchemesViewProtocol {

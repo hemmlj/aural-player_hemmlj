@@ -48,18 +48,9 @@ class Group: Hashable, PlaylistItem {
         return tracks.itemAtIndex(index)
     }
     
-    func insertTrackAtIndex(_ track: Track, _ index: Int) {
-        tracks.insert(track, at: index)
-    }
-    
     // Adds a track and returns the index of the new track
     func addTrack(_ track: Track) -> Int {
         return tracks.addItem(track)
-    }
-    
-    // Removes a track at the given index, and returns the removed track
-    func removeTrackAtIndex(_ index: Int) -> Track? {
-        return tracks.removeItem(index)
     }
     
     func removeTracks(_ removedTracks: [Track]) -> IndexSet {
@@ -110,24 +101,20 @@ class Group: Hashable, PlaylistItem {
         tracks.sort(by: strategy)
     }
     
-    func indexOfTrack(for file: URL) -> Int? {
-        return tracks.firstIndex(where: {$0.file == file})
-    }
-    
+    ///
+    /// Re-order the group (tracks), upon app startup, according to the sort order of the playlist from the last app launch.
+    ///
+    /// - Parameter state:  Application state persisted from the last app launch, including group sort order.
+    ///                     This will determine how the group is reordered.
+    ///
     func reOrder(accordingTo state: GroupState) {
         
-        var insertionIndex: Int = 0
+        // Create a fast lookup map of URL -> Track, for all tracks in this group.
+        var tracksMap: [URL: Track] = [:]
+        self.tracks.forEach {tracksMap[$0.file] = $0}
         
-        for file in state.tracks {
-            
-            if let index = indexOfTrack(for: file) {
-                
-                if index != insertionIndex {
-                    tracks.insert(tracks.remove(at: index), at: insertionIndex)
-                }
-                
-                insertionIndex += 1
-            }
-        }
+        // Re-order thr group by replacing the existing tracks array with an ordered collection created
+        // by mapping URLs from state to their corresponding tracks (by using the lookup map).
+        self.tracks = state.tracks.compactMap {tracksMap[$0]}
     }
 }

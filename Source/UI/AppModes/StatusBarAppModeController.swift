@@ -10,7 +10,7 @@ class StatusBarAppModeController: AppModeController {
     func presentMode() {
         
         NSApp.setActivationPolicy(.accessory)
-        
+
         statusItem.button?.image = NSImage(named: "AppIcon-StatusBar")
         let menu = NSMenu()
         let item1 = NSMenuItem(title: "", action: nil, keyEquivalent: "")

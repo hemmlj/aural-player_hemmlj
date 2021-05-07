@@ -115,3 +115,21 @@ protocol FilterUnitProtocol: FXUnitProtocol {
     
     func removeAllBands()
 }
+
+protocol HostedAudioUnitProtocol: FXUnitProtocol, AUNodeBypassStateObserver {
+    
+    var name: String {get}
+    
+    var componentType: OSType {get}
+    var componentSubType: OSType {get}
+    
+    var params: [AUParameterAddress: Float] {get}
+    
+    var auAudioUnit: AUAudioUnit {get}
+    
+    var factoryPresets: [AudioUnitFactoryPreset] {get}
+    
+    func applyFactoryPreset(_ preset: AudioUnitFactoryPreset)
+    
+    func applyFactoryPreset(_ presetName: String)
+}

@@ -32,12 +32,9 @@ class MasterViewController: FXUnitViewController {
     override func oneTimeSetup() {
         
         super.oneTimeSetup()
-<<<<<<< HEAD:Aural/MasterViewController.swift
         masterView.initialize(eqStateFunction, pitchStateFunction, timeStateFunction, reverbStateFunction, delayStateFunction, filterStateFunction)
-=======
         
         masterView.initialize(graph.eqUnit.stateFunction, graph.pitchUnit.stateFunction, graph.timeUnit.stateFunction, graph.reverbUnit.stateFunction, graph.delayUnit.stateFunction, graph.filterUnit.stateFunction)
->>>>>>> upstream/master:Source/UI/Effects/Master/MasterViewController.swift
     }
     
     override func initSubscriptions() {
@@ -72,11 +69,11 @@ class MasterViewController: FXUnitViewController {
     @IBAction override func presetsAction(_ sender: AnyObject) {
         
         super.presetsAction(sender)
-<<<<<<< HEAD:Aural/MasterViewController.swift
+
        // _ = SyncMessenger.publishActionMessage(EffectsViewActionMessage(.updateEffectsView, .master))
-=======
+
         Messenger.publish(.fx_updateFXUnitView, payload: EffectsUnit.master)
->>>>>>> upstream/master:Source/UI/Effects/Master/MasterViewController.swift
+
     }
     
     private func updateButtons() {
@@ -142,7 +139,7 @@ class MasterViewController: FXUnitViewController {
     func trackChanged(_ notification: TrackTransitionNotification) {
         
         // Apply sound profile if there is one for the new track and if the preferences allow it
-<<<<<<< HEAD:Aural/MasterViewController.swift
+
         if soundPreferences.rememberEffectsSettings, let newTrack = message.newTrack?.track, soundProfiles.hasFor(newTrack) {
 
             updateButtons()
@@ -157,7 +154,7 @@ class MasterViewController: FXUnitViewController {
     }
    
     // MARK: Message handling
-=======
+
         if let newTrack = notification.endTrack, soundProfiles.hasFor(newTrack) {
             
             updateButtons()
@@ -168,13 +165,11 @@ class MasterViewController: FXUnitViewController {
     override func applyFontScheme(_ fontScheme: FontScheme) {
         fontsChanged()
     }
->>>>>>> upstream/master:Source/UI/Effects/Master/MasterViewController.swift
     
     private func fontsChanged() {
-        
-<<<<<<< HEAD:Aural/MasterViewController.swift
+
         switch notification.messageType {
-            
+
         case .effectsUnitStateChangedNotification:
             
             updateButtons()
@@ -184,19 +179,38 @@ class MasterViewController: FXUnitViewController {
             trackChanged(notification as! TrackChangedNotification)
             
         default: return
-=======
+
         lblCaption.font = FontSchemes.systemScheme.effects.unitCaptionFont
         
         functionLabels.forEach {
->>>>>>> upstream/master:Source/UI/Effects/Master/MasterViewController.swift
+
             
             $0.font = $0 is EffectsUnitTriStateLabel ? FontSchemes.systemScheme.effects.masterUnitFunctionFont :
                 FontSchemes.systemScheme.effects.unitCaptionFont
         }
         
         presetsMenu.font = Fonts.menuFont
+        }
+       /**
+        audioUnitsTable.reloadData(forRowIndexes: IndexSet((0..<audioUnitsTable.numberOfRows)), columnIndexes: [1])
     }
     
+    override func applyColorScheme(_ scheme: ColorScheme) {
+        
+        super.applyColorScheme(scheme)
+        
+        changeBackgroundColor(scheme.general.backgroundColor)
+        audioUnitsTable.reloadData()
+    }
+    
+    func changeBackgroundColor(_ color: NSColor) {
+        
+        audioUnitsScrollView.backgroundColor = color
+        audioUnitsClipView.backgroundColor = color
+        audioUnitsTable.backgroundColor = color
+    }
+    **/
+        
     override func changeFunctionCaptionTextColor(_ color: NSColor) {
     }
     
@@ -208,7 +222,6 @@ class MasterViewController: FXUnitViewController {
     
     override func changeBypassedUnitStateColor(_ color: NSColor) {
         
-<<<<<<< HEAD:Aural/MasterViewController.swift
         switch message.actionType {
             
         case .enableEffects, .disableEffects:
@@ -217,9 +230,10 @@ class MasterViewController: FXUnitViewController {
         default: return
             
         }
-=======
+
         super.changeBypassedUnitStateColor(color)
         masterView.changeBypassedUnitStateColor(color)
+        
     }
     
     override func changeSuppressedUnitStateColor(_ color: NSColor) {
@@ -232,6 +246,5 @@ class MasterViewController: FXUnitViewController {
     
     override func stateChanged() {
         updateButtons()
->>>>>>> upstream/master:Source/UI/Effects/Master/MasterViewController.swift
     }
-}
+    }

@@ -36,12 +36,16 @@ class FFmpegDecoder {
     ///
     /// A flag indicating whether or not the codec has reached the end of the currently playing file's audio stream, i.e. EOF..
     ///
-    var eof: Bool = false
+    var eof: Bool {_eof.value}
+    
+    var _eof: AtomicBool = AtomicBool()
 
     ///
     /// Indicates whether or not we have reached the end of the loop when scheduling buffers for the current loop (analogous to EOF for file scheduling).
     ///
-    var endOfLoop: AtomicBool = AtomicBool()
+    var endOfLoop: Bool {_endOfLoop.value}
+
+    var _endOfLoop: AtomicBool = AtomicBool()
     
     ///
     /// Indicates whether or not the frames that are decoded need to have timestamps on them (this is true when a segment loop is active, false when not).
@@ -96,8 +100,7 @@ class FFmpegDecoder {
     ///
     func decode(maxSampleCount: Int32) -> FFmpegFrameBuffer {
         
-        let audioFormat: FFmpegAudioFormat = FFmpegAudioFormat(sampleRate: codec.sampleRate, channelCount: codec.channelCount,
-                                                               channelLayout: codec.channelLayout, sampleFormat: codec.sampleFormat)
+        let audioFormat: FFmpegAudioFormat = FFmpegAudioFormat(sampleRate: codec.sampleRate, channelCount: codec.channelCount, channelLayout: codec.channelLayout, sampleFormat: codec.sampleFormat)
         
         // Create a frame buffer with the specified maximum sample count and the codec's sample format for this file.
         let buffer: FFmpegFrameBuffer = FFmpegFrameBuffer(audioFormat: audioFormat, maxSampleCount: maxSampleCount)
@@ -127,7 +130,7 @@ class FFmpegDecoder {
             } catch let packetReadError as PacketReadError {
                 
                 // If the error signals EOF, suppress it, and simply set the EOF flag.
-                self.eof = packetReadError.isEOF
+                self._eof.setValue(packetReadError.isEOF)
                 
                 // If the error is something other than EOF, it either indicates a real problem or simply that there was one bad packet. Log the error.
                 if !eof {NSLog("Packet read error while reading track \(fileCtx.filePath) : \(packetReadError)")}
@@ -259,12 +262,12 @@ class FFmpegDecoder {
             }
             
             // If the seek succeeds, we have not reached EOF.
-            self.eof = false
+            self._eof.setValue(false)
             
         } catch let seekError as SeekError {
             
             // EOF is considered harmless, only throw if another type of error occurred.
-            self.eof = seekError.isEOF
+            self._eof.setValue(seekError.isEOF)
             
             if !eof {
                 

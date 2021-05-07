@@ -18,8 +18,6 @@ class GroupingPlaylistViewController: NSViewController, NotificationSubscriber {
     // Delegate that retrieves current playback info
     private let playbackInfo: PlaybackInfoDelegateProtocol = ObjectGraph.playbackInfoDelegate
     
-    private let history: HistoryDelegateProtocol = ObjectGraph.historyDelegate
-    
     private let preferences: PlaylistPreferences = ObjectGraph.preferencesDelegate.preferences.playlistPreferences
     
     // Intended to be overriden by subclasses
@@ -119,26 +117,16 @@ class GroupingPlaylistViewController: NSViewController, NotificationSubscriber {
     
     private var selectedRows: IndexSet {playlistView.selectedRowIndexes}
     
-    private var selectedRowsArr: [Int] {playlistView.selectedRowIndexes.toArray()}
-    
-    private var selectedRowCount: Int {playlistView.selectedRowIndexes.count}
-    
-    private var rowCount: Int {playlistView.numberOfRows}
-    
     private var atLeastOneRow: Bool {playlistView.numberOfRows > 0}
     
     private var lastRow: Int {playlistView.numberOfRows - 1}
     
     // Plays the track/group selected within the playlist, if there is one. If multiple items are selected, the first one will be chosen.
     @IBAction func playSelectedItemAction(_ sender: AnyObject) {
-        playSelectedItemWithDelay()
+        playSelectedItem()
     }
     
     func playSelectedItem() {
-        playSelectedItemWithDelay()
-    }
-    
-    func playSelectedItemWithDelay(_ delay: Double? = nil) {
         
         if let firstSelectedRow = selectedRows.min() {
             
@@ -151,12 +139,6 @@ class GroupingPlaylistViewController: NSViewController, NotificationSubscriber {
                 Messenger.publish(TrackPlaybackCommandNotification(group: group))
             }
         }
-    }
-    
-    private func clearPlaylist() {
-        
-        playlist.clear()
-        Messenger.publish(.playlist_refresh, payload: PlaylistViewSelector.allViews)
     }
     
     // Helper function that gathers all selected playlist items as tracks and groups
@@ -441,6 +423,15 @@ class GroupingPlaylistViewController: NSViewController, NotificationSubscriber {
     // Refreshes the playlist view in response to tracks/groups being removed from the playlist
     private func tracksRemoved(_ results: TrackRemovalResults) {
         
+        if PlaylistViewState.current != self.playlistType {
+            
+            DispatchQueue.main.async {
+                self.playlistView.reloadData()
+            }
+            
+            return
+        }
+        
         if let removals = results.groupingPlaylistResults[self.groupType] {
             
             var groupsToReload = [Group]()
@@ -608,6 +599,6 @@ class GroupingPlaylistViewController: NSViewController, NotificationSubscriber {
     }
     
     private func changeGroupIconColor(_ color: NSColor) {
-        allGroups.forEach({playlistView.reloadItem($0)})
+        allGroups.forEach {playlistView.reloadItem($0)}
     }
 }

@@ -19,6 +19,7 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
     private let reverbView: NSView = ViewFactory.reverbView
     private let delayView: NSView = ViewFactory.delayView
     private let filterView: NSView = ViewFactory.filterView
+    private let auView: NSView = ViewFactory.auView
     private let recorderView: NSView = ViewFactory.recorderView
 
     // Tab view and its buttons
@@ -32,6 +33,7 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
     @IBOutlet weak var reverbTabViewButton: EffectsUnitTabButton!
     @IBOutlet weak var delayTabViewButton: EffectsUnitTabButton!
     @IBOutlet weak var filterTabViewButton: EffectsUnitTabButton!
+    @IBOutlet weak var auTabViewButton: EffectsUnitTabButton!
     @IBOutlet weak var recorderTabViewButton: EffectsUnitTabButton!
 
     private var fxTabViewButtons: [EffectsUnitTabButton]!
@@ -77,9 +79,10 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
         fxTabView.tabViewItem(at: 4).view?.addSubview(reverbView)
         fxTabView.tabViewItem(at: 5).view?.addSubview(delayView)
         fxTabView.tabViewItem(at: 6).view?.addSubview(filterView)
-        fxTabView.tabViewItem(at: 7).view?.addSubview(recorderView)
+        fxTabView.tabViewItem(at: 7).view?.addSubview(auView)
+        fxTabView.tabViewItem(at: 8).view?.addSubview(recorderView)
 
-        fxTabViewButtons = [masterTabViewButton, eqTabViewButton, pitchTabViewButton, timeTabViewButton, reverbTabViewButton, delayTabViewButton, filterTabViewButton, recorderTabViewButton]
+        fxTabViewButtons = [masterTabViewButton, eqTabViewButton, pitchTabViewButton, timeTabViewButton, reverbTabViewButton, delayTabViewButton, filterTabViewButton, auTabViewButton, recorderTabViewButton]
         
         masterTabViewButton.stateFunction = graph.masterUnit.stateFunction
         eqTabViewButton.stateFunction = graph.eqUnit.stateFunction
@@ -88,6 +91,23 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
         reverbTabViewButton.stateFunction = graph.reverbUnit.stateFunction
         delayTabViewButton.stateFunction = graph.delayUnit.stateFunction
         filterTabViewButton.stateFunction = graph.filterUnit.stateFunction
+        
+        auTabViewButton.stateFunction = {
+            
+            for unit in self.graph.audioUnits {
+            
+                if unit.state == .active {
+                    return .active
+                }
+                
+                if unit.state == .suppressed {
+                    return .suppressed
+                }
+            }
+            
+            return .bypassed
+        }
+        
         recorderTabViewButton.stateFunction = {return self.recorder.isRecording ? .active : .bypassed}
     }
 
@@ -201,7 +221,7 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
     func stateChanged() {
 
         // Update the tab button states
-        fxTabViewButtons.forEach({$0.updateState()})
+        fxTabViewButtons.forEach {$0.updateState()}
     }
     
     func showTab(_ fxUnit: EffectsUnit) {
@@ -219,6 +239,8 @@ class EffectsWindowController: NSWindowController, NotificationSubscriber {
         case .delay: tabViewAction(delayTabViewButton)
 
         case .filter: tabViewAction(filterTabViewButton)
+            
+        case .au: tabViewAction(auTabViewButton)
 
         case .recorder: tabViewAction(recorderTabViewButton)
             

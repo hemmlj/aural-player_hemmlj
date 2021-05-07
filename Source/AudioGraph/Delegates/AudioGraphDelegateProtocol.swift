@@ -54,8 +54,12 @@ protocol AudioGraphDelegateProtocol {
     var reverbUnit: ReverbUnitDelegateProtocol {get set}
     var delayUnit: DelayUnitDelegateProtocol {get set}
     var filterUnit: FilterUnitDelegateProtocol {get set}
+    var audioUnits: [HostedAudioUnitDelegateProtocol] {get}
     
     var soundProfiles: SoundProfiles {get}
+    
+    func addAudioUnit(ofType type: OSType, andSubType subType: OSType) -> (audioUnit: HostedAudioUnitDelegateProtocol, index: Int)?
+    func removeAudioUnits(at indices: IndexSet) -> [HostedAudioUnitDelegateProtocol]
     
     func registerRenderObserver(_ observer: AudioGraphRenderObserverProtocol)
     func removeRenderObserver(_ observer: AudioGraphRenderObserverProtocol)
@@ -137,6 +141,29 @@ protocol PitchUnitDelegateProtocol: FXUnitDelegateProtocol {
     func decreasePitch() -> (pitch: Float, pitchString: String)
     
     var presets: PitchPresets {get}
+}
+
+protocol HostedAudioUnitDelegateProtocol: FXUnitDelegateProtocol {
+    
+    var id: String {get}
+    
+    var name: String {get}
+    var version: String {get}
+    var manufacturerName: String {get}
+    
+    var componentType: OSType {get}
+    var componentSubType: OSType {get}
+    
+    var params: [AUParameterAddress: Float] {get}
+
+    var presets: AudioUnitPresets {get}
+    var supportsUserPresets: Bool {get}
+    
+    var factoryPresets: [AudioUnitFactoryPreset] {get}
+    
+    func applyFactoryPreset(_ presetName: String)
+    
+    func presentView(_ handler: @escaping (NSView) -> ())
 }
 
 protocol TimeUnitDelegateProtocol: FXUnitDelegateProtocol {

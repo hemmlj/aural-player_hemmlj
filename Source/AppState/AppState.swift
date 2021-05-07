@@ -17,6 +17,7 @@ class AppState {
     var favorites: [(file: URL, name: String)] = [(file: URL, name: String)]()
     var bookmarks: [BookmarkState] = []
     var playbackProfiles: [PlaybackProfile] = []
+    var musicBrainzCache: MusicBrainzCacheState = MusicBrainzCacheState()
     
     static let defaults: AppState = AppState()
     
@@ -26,31 +27,33 @@ class AppState {
         let state = AppState()
         
         if let uiDict = (jsonObject["ui"] as? NSDictionary) {
-            state.ui = UIState.deserialize(uiDict) as! UIState
+            state.ui = UIState.deserialize(uiDict)
         }
         
         if let map = (jsonObject["audioGraph"] as? NSDictionary) {
-            state.audioGraph = AudioGraphState.deserialize(map) as! AudioGraphState
+            state.audioGraph = AudioGraphState.deserialize(map)
         }
         
         if let playbackSequenceDict = (jsonObject["playbackSequence"] as? NSDictionary) {
-            state.playbackSequence = PlaybackSequenceState.deserialize(playbackSequenceDict) as! PlaybackSequenceState
+            state.playbackSequence = PlaybackSequenceState.deserialize(playbackSequenceDict)
         }
         
         if let playlistDict = (jsonObject["playlist"] as? NSDictionary) {
-            state.playlist = PlaylistState.deserialize(playlistDict) as! PlaylistState
+            state.playlist = PlaylistState.deserialize(playlistDict)
         }
         
         if let historyDict = (jsonObject["history"] as? NSDictionary) {
-            state.history = HistoryState.deserialize(historyDict) as! HistoryState
+            state.history = HistoryState.deserialize(historyDict)
         }
         
-        if let favoritesArr = (jsonObject["favorites"] as? [NSDictionary]) {
-            favoritesArr.forEach({
+        if let favoritesArr = jsonObject["favorites"] as? [NSDictionary] {
+            
+            favoritesArr.forEach {
+                
                 if let file = $0["file"] as? String, let name = $0["name"] as? String {
                     state.favorites.append((URL(fileURLWithPath: file), name))
                 }
-            })
+            }
         }
         
         (jsonObject["bookmarks"] as? NSArray)?.forEach({
@@ -66,6 +69,10 @@ class AppState {
                 state.playbackProfiles.append(profile)
             }
         })
+        
+        if let musicBrainzCacheDict = (jsonObject["musicBrainzCache"] as? NSDictionary) {
+            state.musicBrainzCache = MusicBrainzCacheState.deserialize(musicBrainzCacheDict)
+        }
         
         return state
     }

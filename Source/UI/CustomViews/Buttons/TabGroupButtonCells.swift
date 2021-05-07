@@ -16,7 +16,6 @@ class TabGroupButtonCell: NSButtonCell {
     var borderInsetY: CGFloat {return 1}
     var borderRadius: CGFloat {return 1}
     var borderLineWidth: CGFloat {return 2}
-    var borderStrokeColor: NSColor {return Colors.tabViewButtonOutlineColor}
     var selectionBoxColor: NSColor {return Colors.tabViewSelectionBoxColor}
     
     var unselectedTextColor: NSColor {return Colors.tabViewButtonTextColor}
@@ -114,12 +113,6 @@ class TrackInfoPopoverTabButtonCell: TabGroupButtonCell {
     override var selectionBoxColor: NSColor {return _selectionBoxColor}
 }
 
-class PrefsNestedTabButtonCell: PrefsTabButtonCell {
-    
-    override var borderRadius: CGFloat {return 2.5}
-    override var selectionBoxColor: NSColor {return Colors.tabViewSelectionBoxColor}
-}
-
 class EQSelectorButtonCell: TabGroupButtonCell {
     
     override var textFont: NSFont {return FontSchemes.systemScheme.effects.unitFunctionFont}
@@ -131,23 +124,7 @@ class EQSelectorButtonCell: TabGroupButtonCell {
     override var unselectedTextColor: NSColor {return Colors.tabButtonTextColor}
     override var selectedTextColor: NSColor {return Colors.selectedTabButtonTextColor}
     
-    override var yOffset: CGFloat {
-        
-//        if isOff {
-//            return -1
-//        }
-//
-//        switch EffectsViewState.textSize {
-//
-//        case .normal:   return 1
-//
-//        case .larger:   return 0
-//
-//        case .largest:  return -1
-//
-//        }
-        return 0
-    }
+    override var yOffset: CGFloat {0}
     
     override func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
         
@@ -174,23 +151,7 @@ class EQSelectorButtonCell: TabGroupButtonCell {
 
 class FilterBandsTabButtonCell: EQSelectorButtonCell {
     
-    override var yOffset: CGFloat {
-        
-//        if isOff {
-//            return -1
-//        }
-//
-//        switch EffectsViewState.textSize {
-//
-//        case .normal:   return 1
-//
-//        case .larger:   return 0
-//
-//        case .largest:  return 0
-//
-//        }
-        return 0
-    }
+    override var yOffset: CGFloat {0}
     
     override func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
         
