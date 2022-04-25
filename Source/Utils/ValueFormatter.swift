@@ -99,15 +99,6 @@ class ValueFormatter {
     }
     
     // Formats a duration (time interval) from seconds to a displayable string showing minutes, and seconds. For example, 500 seconds becomes "8 min 20 sec", 120 seconds becomes "2 min", and 36 seconds becomes "36 sec"
-    static func formatSecondsToHMS_minSec(_ duration: Int) -> String {
-        
-        let secs = duration % oneMin
-        let mins = duration / oneMin
-        
-        return mins > 0 ? (secs > 0 ? String(format: "%d min %d sec", mins, secs) : String(format: "%d min", mins)) : String(format: "%d sec", secs)
-    }
-    
-    // Formats a duration (time interval) from seconds to a displayable string showing minutes, and seconds. For example, 500 seconds becomes "8 min 20 sec", 120 seconds becomes "2 min", and 36 seconds becomes "36 sec"
     static func formatSecondsToHMS_hrMinSec(_ duration: Int) -> String {
         
         let hrs = duration / oneHour
@@ -266,7 +257,7 @@ class ValueFormatter {
             if (c < numDigits && (numDigits - c) % 3 == 0) {
                 readableNumString.append(",")
             }
-            c += 1
+            c.increment()
         }
         
         return readableNumString
@@ -286,7 +277,7 @@ class ValueFormatter {
             if (c < numDigits && (numDigits - c) % 3 == 0) {
                 readableNumString.append(",")
             }
-            c += 1
+            c.increment()
         }
         
         return readableNumString
@@ -296,7 +287,6 @@ class ValueFormatter {
 
         // Units for different effects parameters
         
-        static let eqGainDB: String = "dB"
         static let pitchOctaves: String = "8ve"
         static let timeStretchRate: String = "x"
         static let reverbWetAmount: String = "wet"
@@ -304,7 +294,6 @@ class ValueFormatter {
         static let delayTimeSecs: String = "s"
         static let delayFeedbackPerc: String = "%"
         static let frequencyHz: String = "Hz"
-        static let frequencyKHz: String = "KHz"
         static let screenRealEstatePixel: String = "px"
     }
 }

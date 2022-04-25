@@ -36,10 +36,6 @@ struct AppConstants {
         static let eq10BandFrequencies: [Float] = [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
         static let eq15BandFrequencies: [Float] = [25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000, 6300, 10000, 16000]
         
-        // Min/max Equalizer gain
-        static let eqGainMin: Float = -20      // -20 dB
-        static let eqGainMax: Float = 20      // -20 dB
-        
         static let subBass_min: Float = audibleRangeMin
         static let subBass_max: Float = 60
         
@@ -49,9 +45,6 @@ struct AppConstants {
         
         static let mid_min: Float = bass_max
         static let mid_max: Float = 4000
-        
-        static let treble_min: Float = mid_max
-        static let treble_max: Float = audibleRangeMax
     }
     
     struct ValueConversions {

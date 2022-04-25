@@ -62,6 +62,12 @@ extension Notification.Name {
     
     // ----------------------------------------------------------------------------------------
     
+    // MARK: Notifications published by the Audio Units FX unit.
+    
+    static let auFXUnit_audioUnitsAddedOrRemoved = Notification.Name("auFXUnit_audioUnitsAddedOrRemoved")
+    
+    // ----------------------------------------------------------------------------------------
+    
     // MARK: Notifications published by the player.
     
     // Signifies that the currently playing track chapter has changed.
@@ -120,6 +126,10 @@ extension Notification.Name {
     // eg. when the user plugs headphones in or out of the system, or connects to
     // a new set of speakers.
     static let audioGraph_outputDeviceChanged = Notification.Name("audioGraph_outputDeviceChanged")
+    
+    static let audioGraph_preGraphChange = Notification.Name("audioGraph_preGraphChange")
+    
+    static let audioGraph_graphChanged = Notification.Name("audioGraph_graphChanged")
     
     // ----------------------------------------------------------------------------------------
     
@@ -451,6 +461,12 @@ extension Notification.Name {
     
     // ----------------------------------------------------------------------------------------
     
+    // MARK: Audio Units FX unit commands
+    
+    static let auFXUnit_showEditor = Notification.Name("auFXUnit_showEditor")
+    
+    // ----------------------------------------------------------------------------------------
+    
     // MARK: Window layout commands
     
     // Commands the window manager to show/hide the playlist window
@@ -568,9 +584,15 @@ extension Notification.Name {
 
     // Commands all playlist views to change the color of their group icons.
     static let playlist_changeGroupIconColor = Notification.Name("playlist_changeGroupIconColor")
+    
+    // Commands all playlist views to change the color of their group icons.
+//    static let playlist_changeGroupIconSelectedRowsColor = Notification.Name("playlist_changeGroupIconSelectedRowsColor")
 
     // Commands all playlist views to change the color of their group disclosure triangles.
     static let playlist_changeGroupDisclosureTriangleColor = Notification.Name("playlist_changeGroupDisclosureTriangleColor")
+    
+    // Commands all playlist views to change the color of their group disclosure triangles.
+//    static let playlist_changeGroupDisclosureTriangleSelectedRowsColor = Notification.Name("playlist_changeGroupDisclosureTriangleSelectedRowsColor")
 
     // Commands all playlist views to change the color of their selection boxes.
     static let playlist_changeSelectionBoxColor = Notification.Name("playlist_changeSelectionBoxColor")
@@ -578,7 +600,8 @@ extension Notification.Name {
     // Commands all playlist views to change the color of their playing track marker icons.
     static let playlist_changePlayingTrackIconColor = Notification.Name("playlist_changePlayingTrackIconColor")
     
-    
+    // Commands all playlist views to change the color of their playing track marker icons.
+//    static let playlist_changePlayingTrackIconSelectedRowsColor = Notification.Name("playlist_changePlayingTrackIconSelectedRowsColor")
     
     // MARK: Color scheme commands sent to the FX UI
     

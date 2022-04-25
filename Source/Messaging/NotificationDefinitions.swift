@@ -375,3 +375,37 @@ class SelectSearchResultCommandNotification: PlaylistCommandNotification {
         super.init(notificationName: .playlist_selectSearchResult, viewSelector: viewSelector)
     }
 }
+
+// Command from the playlist search dialog to the playlist, to show (i.e. select) a specific search result within the playlist.
+struct ShowAudioUnitEditorCommandNotification: NotificationPayload {
+    
+    let notificationName: Notification.Name = .auFXUnit_showEditor
+
+    // The audio unit that is to be edited.
+    let audioUnit: HostedAudioUnitDelegateProtocol
+}
+
+struct PreAudioGraphChangeNotification: NotificationPayload {
+    
+    let notificationName: Notification.Name = .audioGraph_preGraphChange
+
+    let context: AudioGraphChangeContext
+}
+
+class AudioGraphChangeContext {
+    
+    var playbackSession: PlaybackSession?
+    
+    // The player node's seek position captured before the audio graph change.
+    // This can be used by notification subscribers when responding to the change.
+    var seekPosition: Double?
+    
+    var isPlaying: Bool = true
+}
+
+struct AudioGraphChangedNotification: NotificationPayload {
+    
+    let notificationName: Notification.Name = .audioGraph_graphChanged
+    
+    let context: AudioGraphChangeContext
+}

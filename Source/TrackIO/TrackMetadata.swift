@@ -5,7 +5,6 @@ class FileMetadata {
     
     var playlist: PlaylistMetadata?
     var playback: PlaybackContextProtocol?
-    var auxiliary: AuxiliaryMetadata?
     
     var isPlayable: Bool {validationError == nil}
     var validationError: DisplayableError?
@@ -52,8 +51,6 @@ struct AuxiliaryMetadata {
     
     var fileSystemInfo: FileSystemInfo?
     var audioInfo: AudioInfo?
-    
-    var art: CoverArt?
 }
 
 class CoverArt {
@@ -61,10 +58,28 @@ class CoverArt {
     var image: NSImage
     var metadata: ImageMetadata?
     
-    init(_ image: NSImage, _ metadata: ImageMetadata? = nil) {
+    init?(imageFile: URL) {
+        
+        guard let image = NSImage(contentsOfFile: imageFile.path) else {return nil}
+        self.image = image
+        
+        do {
+
+            // Read the image file for image metadata.
+            let imgData: Data = try Data(contentsOf: imageFile)
+            self.metadata = ParserUtils.getImageMetadata(imgData as NSData)
+            
+        } catch {
+            NSLog("Warning - Unable to read data from the image file: \(imageFile.path)")
+        }
+    }
+    
+    init?(imageData: Data) {
+        
+        guard let image = NSImage(data: imageData) else {return nil}
         
         self.image = image
-        self.metadata = metadata
+        self.metadata = ParserUtils.getImageMetadata(imageData as NSData)
     }
 }
 
@@ -100,6 +115,9 @@ class AudioInfo {
     
     // The sample rate of the track (in Hz)
     var sampleRate: Int32?
+    
+    // eg. 32-bit Floating point planar or Signed 16-bit Integer interleaved.
+    var sampleFormat: String?
     
     // Number of audio channels
     var numChannels: Int?

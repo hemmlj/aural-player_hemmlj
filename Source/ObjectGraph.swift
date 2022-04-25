@@ -12,7 +12,6 @@ class ObjectGraph {
     static var preferencesDelegate: PreferencesDelegate!
     
     private static var playlist: PlaylistCRUDProtocol!
-    static var playlistAccessor: PlaylistAccessorProtocol! {return playlist}
     
     static var playlistDelegate: PlaylistDelegateProtocol!
     static var playlistAccessorDelegate: PlaylistAccessorDelegateProtocol! {return playlistDelegate}
@@ -50,6 +49,14 @@ class ObjectGraph {
     
     static var mediaKeyHandler: MediaKeyHandler!
     
+    static var coverArtReader: CoverArtReader!
+    static var fileCoverArtReader: FileCoverArtReader!
+    static var musicBrainzCoverArtReader: MusicBrainzCoverArtReader!
+    
+    static var musicBrainzCache: MusicBrainzCache!
+    
+    static var audioUnitsManager: AudioUnitsManager!
+    
     static var fft: FFT!
     
     // Don't let any code invoke this initializer to create instances of ObjectGraph
@@ -66,8 +73,10 @@ class ObjectGraph {
         preferences = Preferences.instance
         preferencesDelegate = PreferencesDelegate(preferences)
         
+        audioUnitsManager = AudioUnitsManager()
+        
         // Audio Graph (and delegate)
-        audioGraph = AudioGraph(appState.audioGraph)
+        audioGraph = AudioGraph(audioUnitsManager, appState.audioGraph)
         
         // The new scheduler uses an AVFoundation API that is only available with macOS >= 10.13.
         // Instantiate the legacy scheduler if running on 10.12 Sierra or older systems.
@@ -100,7 +109,14 @@ class ObjectGraph {
         sequencerDelegate = SequencerDelegate(sequencer)
         
         fileReader = FileReader()
-        trackReader = TrackReader(fileReader)
+        fileCoverArtReader = FileCoverArtReader(fileReader)
+        
+        musicBrainzCache = MusicBrainzCache(state: appState.musicBrainzCache, preferences: preferences.metadataPreferences.musicBrainz)
+        musicBrainzCoverArtReader = MusicBrainzCoverArtReader(state: appState.musicBrainzCache, preferences: preferences.metadataPreferences.musicBrainz, cache: musicBrainzCache)
+        
+        coverArtReader = CoverArtReader(fileCoverArtReader, musicBrainzCoverArtReader)
+        
+        trackReader = TrackReader(fileReader, coverArtReader)
         
         let profiles = PlaybackProfiles()
         
@@ -109,7 +125,7 @@ class ObjectGraph {
         }
         
         let startPlaybackChain = StartPlaybackChain(player, sequencer, playlist, trackReader: trackReader, profiles, preferences.playbackPreferences)
-        let stopPlaybackChain = StopPlaybackChain(player, sequencer, profiles, preferences.playbackPreferences)
+        let stopPlaybackChain = StopPlaybackChain(player, playlist, sequencer, profiles, preferences.playbackPreferences)
         let trackPlaybackCompletedChain = TrackPlaybackCompletedChain(startPlaybackChain, stopPlaybackChain, sequencer)
         
         // Playback Delegate
@@ -191,9 +207,9 @@ class ObjectGraph {
         
         appState.appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         
-        appState.audioGraph = (audioGraph as! PersistentModelObject).persistentState as! AudioGraphState
-        appState.playlist = (playlist as! Playlist).persistentState as! PlaylistState
-        appState.playbackSequence = (sequencer as! Sequencer).persistentState as! PlaybackSequenceState
+        appState.audioGraph = (audioGraph as! AudioGraph).persistentState
+        appState.playlist = (playlist as! Playlist).persistentState
+        appState.playbackSequence = (sequencer as! Sequencer).persistentState
         appState.playbackProfiles = playbackDelegate.profiles.all()
         
         appState.ui = UIState()
@@ -204,9 +220,10 @@ class ObjectGraph {
         appState.ui.playlist = PlaylistViewState.persistentState
         appState.ui.visualizer = VisualizerViewState.persistentState
         
-        appState.history = (historyDelegate as! HistoryDelegate).persistentState as! HistoryState
+        appState.history = (historyDelegate as! HistoryDelegate).persistentState
         appState.favorites = (favoritesDelegate as! FavoritesDelegate).persistentState
         appState.bookmarks = (bookmarksDelegate as! BookmarksDelegate).persistentState
+        appState.musicBrainzCache = musicBrainzCoverArtReader.cache.persistentState
         
         // App state persistence and shutting down the audio engine can be performed concurrently
         // on two background threads to save some time when exiting the app.

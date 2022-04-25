@@ -38,6 +38,34 @@ class JSONMapper {
         return mapPrimitive(child.value)
     }
     
+    private static func mapAny(_ value: Any) -> AnyObject {
+        
+        // Primitive (no children)
+        if isPrimitive(value) {
+            return mapPrimitive(value)
+        }
+        
+        let mirror = mirrorFor(value)
+        
+        // Array
+        if mirror.displayStyle == .collection {
+            return mapArray(value)
+        }
+        
+        // Dictionary
+        if mirror.displayStyle == .dictionary {
+            return mapDictionary(value)
+        }
+        
+        // Class/struct type or Tuple
+        if !mirror.allChildren().isEmpty || mirror.displayStyle == .tuple {
+            return mapObject(value, [])
+        }
+        
+        // Default to primitive mapping
+        return mapPrimitive(value)
+    }
+    
     private static func mapObject(_ obj: Any, _ ignoreProps: [String] = []) -> NSDictionary {
         
         let unwrapped = unwrapOptional(obj)
@@ -82,7 +110,7 @@ class JSONMapper {
         
         var dict: [NSString: AnyObject] = [:]
         for (key, value) in obj as! NSDictionary {
-            dict[mapToString(key) as NSString] = mapObject(value)
+            dict[mapToString(key) as NSString] = mapAny(value)
         }
         
         return dict as NSDictionary
@@ -90,7 +118,7 @@ class JSONMapper {
     
     private static func isPrimitive(_ obj: Any) -> Bool {
         
-        return obj is Float || obj is CGFloat || obj is Int || obj is Double || obj is Bool || obj is String || obj is URL || obj is Date || mirrorFor(obj).displayStyle == .enum
+        return obj is Float || obj is CGFloat || obj is Int || obj is UInt64 || obj is Int64 || obj is Int32 || obj is OSType || obj is UInt32 || obj is Double || obj is Bool || obj is String || obj is URL || obj is Date || mirrorFor(obj).displayStyle == .enum
     }
     
     private static func mapToString(_ obj: Any) -> String {
@@ -110,7 +138,7 @@ class JSONMapper {
         let obj: Any = unwrapped.value!
         
         // Number
-        if obj is Float || obj is CGFloat || obj is Int || obj is Double {
+        if obj is Float || obj is CGFloat || obj is Int || obj is UInt64 || obj is Int64 || obj is Int32 || obj is OSType || obj is UInt32 || obj is Double {
             return obj as! NSNumber
         }
         

@@ -8,8 +8,12 @@ class TrackReader {
     // The delegate object that this object defers all read operations to.
     private var fileReader: FileReader
     
-    init(_ fileReader: FileReader) {
+    private var coverArtReader: CoverArtReader
+    
+    init(_ fileReader: FileReader, _ coverArtReader: CoverArtReader) {
+        
         self.fileReader = fileReader
+        self.coverArtReader = coverArtReader
     }
     
     ///
@@ -66,10 +70,13 @@ class TrackReader {
     ///
     /// Loads all metadata and resources that are required for track playback.
     ///
-    func prepareForPlayback(track: Track) throws {
+    func prepareForPlayback(track: Track, immediate: Bool = true) throws {
         
         // Make sure track is valid before trying to prep it for playback.
-        if let validationError = track.validationError {
+        if let prepError = track.preparationError {
+            throw prepError
+            
+        } else if let validationError = track.validationError {
             
             track.preparationError = validationError
             throw validationError
@@ -90,7 +97,7 @@ class TrackReader {
             }
             
             // Load cover art for display in the player.
-            loadArtAsync(for: track)
+            loadArtAsync(for: track, immediate: immediate)
             
         } catch {
             
@@ -111,33 +118,17 @@ class TrackReader {
     /// cover art is not required immediately, and a short delay is acceptable.
     /// (eg. when preparing for playback)
     ///
-    func loadArtAsync(for track: Track) {
+    func loadArtAsync(for track: Track, immediate: Bool = true) {
         
-        if track.artLoaded {return}
+        if track.art != nil {return}
         
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: immediate ? .userInteractive : .utility).async {
             
-            track.art = self.fileReader.getArt(for: track.file)
-
-            // Send out an update notification if art was found.
-            if track.art != nil {
+            if let art = self.coverArtReader.getCoverArt(forTrack: track) {
+                
+                track.art = art
                 Messenger.publish(TrackInfoUpdatedNotification(updatedTrack: track, updatedFields: .art))
             }
-        }
-    }
-    
-    ///
-    /// Loads cover art for a track.
-    ///
-    func loadArt(for track: Track) {
-        
-        if track.artLoaded {return}
-        
-        track.art = self.fileReader.getArt(for: track.file)
-        
-        // Send out an update notification if art was found.
-        if track.art != nil {
-            Messenger.publish(TrackInfoUpdatedNotification(updatedTrack: track, updatedFields: .art))
         }
     }
     
@@ -149,7 +140,8 @@ class TrackReader {
         if track.auxMetadataLoaded {return}
         
         let auxMetadata = fileReader.getAuxiliaryMetadata(for: track.file,
-                                                          loadingAudioInfoFrom: track.playbackContext, loadArt: !track.artLoaded)
+                                                          loadingAudioInfoFrom: track.playbackContext)
         track.setAuxiliaryMetadata(auxMetadata)
+        loadArtAsync(for: track)
     }
 }

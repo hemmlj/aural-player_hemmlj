@@ -16,8 +16,7 @@ extension FFmpegDecoder {
     ///
     func decodeLoop(maxSampleCount: Int32, loopEndTime: Double) -> FFmpegFrameBuffer {
         
-        let audioFormat: FFmpegAudioFormat = FFmpegAudioFormat(sampleRate: codec.sampleRate, channelCount: codec.channelCount,
-                                                               channelLayout: codec.channelLayout, sampleFormat: codec.sampleFormat)
+        let audioFormat: FFmpegAudioFormat = FFmpegAudioFormat(sampleRate: codec.sampleRate, channelCount: codec.channelCount, channelLayout: codec.channelLayout, sampleFormat: codec.sampleFormat)
         
         // Create a frame buffer with the specified maximum sample count and the codec's sample format for this file.
         let buffer: FFmpegFrameBuffer = FFmpegFrameBuffer(audioFormat: audioFormat, maxSampleCount: maxSampleCount)
@@ -41,7 +40,7 @@ extension FFmpegDecoder {
                     frame.keepFirstNSamples(sampleCount: truncatedSampleCount)
                     buffer.appendTerminalFrames([frame])
                     
-                    self.endOfLoop.setValue(true)
+                    self._endOfLoop.setValue(true)
                     
                     break
                 }
@@ -63,7 +62,7 @@ extension FFmpegDecoder {
             } catch let packetReadError as PacketReadError {
                 
                 // If the error signals EOF, suppress it, and simply set the EOF flag.
-                self.eof = packetReadError.isEOF
+                self._eof.setValue(packetReadError.isEOF)
                 
                 // If the error is something other than EOF, it either indicates a real problem or simply that there was one bad packet. Log the error.
                 if !eof {NSLog("Packet read error while reading track \(fileCtx.filePath) : \(packetReadError)")}
@@ -84,7 +83,7 @@ extension FFmpegDecoder {
         
         if eof {
             
-            self.endOfLoop.setValue(true)
+            self._endOfLoop.setValue(true)
             
             var terminalFrames: [FFmpegFrame] = frameQueue.dequeueAll()
             
@@ -108,6 +107,6 @@ extension FFmpegDecoder {
     /// Resets all loop-related state, in response to a loop either being completed or being removed.
     ///
     func loopCompleted() {
-        self.endOfLoop.setValue(false)
+        self._endOfLoop.setValue(false)
     }
 }

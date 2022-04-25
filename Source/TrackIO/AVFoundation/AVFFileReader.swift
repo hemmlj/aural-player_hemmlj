@@ -96,7 +96,7 @@ class AVFFileReader: FileReaderProtocol {
         return try AVFPlaybackContext(for: file)
     }
     
-    func getAuxiliaryMetadata(for file: URL, loadingAudioInfoFrom playbackContext: PlaybackContextProtocol? = nil, loadArt: Bool) -> AuxiliaryMetadata {
+    func getAuxiliaryMetadata(for file: URL, loadingAudioInfoFrom playbackContext: PlaybackContextProtocol? = nil) -> AuxiliaryMetadata {
         
         // Construct a metadata map for this file.
         let metadataMap = AVFMappedMetadata(file: file)
@@ -140,7 +140,7 @@ class AVFFileReader: FileReaderProtocol {
             
             let intChannelCount = Int(thePlaybackContext.audioFormat.channelCount)
             audioInfo.numChannels = intChannelCount
-            audioInfo.channelLayout = thePlaybackContext.audioFile.channelLayoutString
+            audioInfo.channelLayout = thePlaybackContext.audioFormat.channelLayoutString
             
             audioInfo.sampleRate = Int32(thePlaybackContext.sampleRate)
             audioInfo.frames = thePlaybackContext.frameCount
@@ -173,11 +173,6 @@ class AVFFileReader: FileReaderProtocol {
         }
         
         metadata.audioInfo = audioInfo
-
-        // Load art if required (if not previously loaded).
-        if loadArt {
-            metadata.art = parsers.firstNonNilMappedValue {$0.getArt(metadataMap)}
-        }
         
         return metadata
     }
